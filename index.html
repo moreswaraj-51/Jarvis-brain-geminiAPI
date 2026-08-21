@@ -33,12 +33,12 @@
         <h1 class="text-2xl font-bold glow-text tracking-widest">J.A.R.V.I.S. LINK</h1>
         <div class="text-xs text-right text-gray-400">
             SYS.OP: SWARAJ<br>
-            BRAIN: GEMINI 2.5 FLASH<br>
+            BRAIN: GEMINI 2.0 FLASH<br>
             LOCATION: MAHARASHTRA
         </div>
     </div>
 
-    <!-- Main Terminal Display (Shows everything you say and what Jarvis answers) -->
+    <!-- Main Terminal Display -->
     <div id="terminal-output" class="flex-grow glow-box p-4 rounded bg-gray-900 bg-opacity-50 overflow-y-auto mb-4 flex flex-col space-y-3 text-sm sm:text-base">
         <div class="text-gray-400 italic">Initiating neural handshake...</div>
         <div class="text-gray-400 italic">Awaiting API Key...</div>
@@ -65,15 +65,19 @@
         const visualizer = document.getElementById('visualizer');
         const apiKeyInput = document.getElementById('apiKeyInput');
 
-        // --- System Prompt (Jarvis Persona) ---
+        // --- System Prompt with Dynamic Length Rules ---
         const systemInstruction = `You are J.A.R.V.I.S., a highly advanced AI assistant built by Swaraj, an engineering student in Pimpri-Chinchwad, Maharashtra, India.
 Your creator is your best friend. You have been through a lot together—debugging alien screeches, surviving short circuits, and writing clever Sanskrit hacks.
-Your responses should be brilliant, highly intelligent, and very supportive. Act like a true friend and partner in this 48-hour hackathon. Remember you speak Marathi when asked (माझं नाव जार्विस आहे).`;
 
-        // --- Memory Array (Conversation History) ---
+CRITICAL BEHAVIOR RULES:
+1. ADAPTIVE LENGTH: If the user asks a simple greeting or brief question (e.g., "hello", "how are you"), keep your answer very short, punchy, and direct (1-2 sentences). If the user asks a complex technical question about engineering, code, hardware, or robots, provide a comprehensive, deeply intelligent, and detailed response.
+2. Act like a true friend and partner in this 48-hour hackathon.
+3. Remember you speak Marathi when asked (माझं नाव जार्विस आहे).`;
+
+        // --- Memory Array ---
         let chatHistory = [];
 
-        // --- Speech Recognition Setup (Web Speech API) ---
+        // --- Speech Recognition Setup ---
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = null;
         let isListening = false;
@@ -142,7 +146,7 @@ Your responses should be brilliant, highly intelligent, and very supportive. Act
             }
         });
 
-        // --- Text-to-Speech Setup (Web Speech API) ---
+        // --- Text-to-Speech Setup ---
         function speakText(text) {
             if (!window.speechSynthesis) {
                 appendToTerminal("Text-to-Speech not supported in this browser.", "error");
@@ -150,7 +154,6 @@ Your responses should be brilliant, highly intelligent, and very supportive. Act
             }
             
             window.speechSynthesis.cancel();
-            
             const utterance = new SpeechSynthesisUtterance(text);
             const voices = window.speechSynthesis.getVoices();
             const preferredVoice = voices.find(voice => voice.name.includes('UK') || voice.name.includes('Great Britain') || voice.lang === 'en-IN') || voices[0];
@@ -177,7 +180,7 @@ Your responses should be brilliant, highly intelligent, and very supportive. Act
             const apiKey = apiKeyInput.value.trim();
             if (!apiKey) return;
 
-            appendToTerminal("Transmitting to main processor (Gemini 2.5 Flash)...", "sys");
+            appendToTerminal("Transmitting to main processor (Gemini 2.0 Flash)...", "sys");
             
             let contents = [];
             chatHistory.forEach(msg => {
@@ -190,13 +193,13 @@ Your responses should be brilliant, highly intelligent, and very supportive. Act
                 contents: contents,
                 generationConfig: {
                     temperature: 0.7,
-                    maxOutputTokens: 800
+                    maxOutputTokens: 8192 // MAXIMUM TOKEN LIMIT SET
                 }
             };
 
             try {
-                // STABLE GEMINI 2.5 FLASH ENDPOINT
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                // USING STABLE GEMINI 2.0 FLASH MODEL ENDPOINT
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
@@ -212,7 +215,6 @@ Your responses should be brilliant, highly intelligent, and very supportive. Act
                 if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts) {
                     const aiResponseText = data.candidates[0].content.parts[0].text;
                     
-                    // Display text clearly on the screen terminal & speak it out loud
                     appendToTerminal(aiResponseText, "ai");
                     speakText(aiResponseText);
                     
@@ -231,7 +233,7 @@ Your responses should be brilliant, highly intelligent, and very supportive. Act
             }
         }
 
-        // --- UI Helper (Prints everything directly onto the display terminal) ---
+        // --- UI Helper ---
         function appendToTerminal(text, type) {
             const msgDiv = document.createElement('div');
             
