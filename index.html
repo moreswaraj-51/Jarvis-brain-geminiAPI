@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,44 +22,43 @@
         .bar:nth-child(5) { animation-delay: -0.8s; }
         @keyframes equalize { 0% { height: 10px; opacity: 0.5; } 100% { height: 40px; opacity: 1; } }
         
-        #visualizer { display: none; height: 50px; align-items: center; justify-content: center; }
+        #visualizer { display: none; height: 40px; align-items: center; justify-content: center; }
         #visualizer.active { display: flex; }
     </style>
 </head>
-<body class="h-screen w-full flex flex-col p-4 overflow-hidden">
+<body class="h-screen w-full flex flex-col p-4 pb-12 overflow-hidden">
 
     <!-- Header -->
-    <div class="flex justify-between items-center mb-4 border-b border-[#00ffcc] pb-2">
-        <h1 class="text-2xl font-bold glow-text tracking-widest">J.A.R.V.I.S. LINK</h1>
-        <div class="text-xs text-right text-gray-400">
-            SYS.OP: SWARAJ<br>
-            BRAIN: GEMINI 2.5 FLASH<br>
-            LOCATION: MAHARASHTRA
+    <div class="flex justify-between items-center mb-2 border-b border-[#00ffcc] pb-2">
+        <h1 class="text-xl font-bold glow-text tracking-widest">J.A.R.V.I.S. LINK</h1>
+        <div class="text-[10px] text-right text-gray-400">
+            SYS.OP: SWARAJ | GEMINI 2.5 FLASH
         </div>
     </div>
 
-    <!-- Main Terminal Display -->
-    <div id="terminal-output" class="flex-grow glow-box p-4 rounded bg-gray-900 bg-opacity-50 overflow-y-auto mb-4 flex flex-col space-y-3 text-sm sm:text-base">
+    <!-- Main Terminal Display (Extra bottom margin to prevent phone gesture bar overlap) -->
+    <div id="terminal-output" class="flex-grow glow-box p-3 rounded bg-gray-900 bg-opacity-50 overflow-y-auto mb-3 flex flex-col space-y-3 text-sm">
         <div class="text-gray-400 italic">Initiating neural handshake...</div>
         <div class="text-gray-400 italic">Awaiting API Key...</div>
     </div>
 
-    <!-- Audio Visualizer (Hidden by default) -->
-    <div id="visualizer" class="mb-4">
+    <!-- Audio Visualizer -->
+    <div id="visualizer" class="mb-2">
         <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
     </div>
 
-    <!-- Controls & Chat Input -->
-    <div class="flex flex-col gap-2">
-        <input type="password" id="apiKeyInput" placeholder="Enter Gemini API Key here..." class="w-full bg-black border border-[#00ffcc] text-[#00ffcc] p-2 rounded outline-none focus:ring-1 focus:ring-[#00ffcc]">
+    <!-- Controls & Chat Input Section (Pushed higher up) -->
+    <div class="flex flex-col gap-2 mb-4">
+        <input type="password" id="apiKeyInput" placeholder="Enter Gemini API Key here..." class="w-full bg-black border border-[#00ffcc] text-[#00ffcc] p-2 text-sm rounded outline-none focus:ring-1 focus:ring-[#00ffcc]">
         
         <!-- Text Chat Input Row -->
         <div class="flex gap-2">
-            <input type="text" id="chatInput" placeholder="Type a message to Jarvis..." class="flex-grow bg-black border border-[#00ffcc] text-[#00ffcc] p-2 rounded outline-none focus:ring-1 focus:ring-[#00ffcc]">
-            <button id="sendBtn" class="bg-transparent border-2 border-[#00ffcc] text-[#00ffcc] px-4 py-2 font-bold rounded uppercase hover:bg-[#00ffcc] hover:text-black transition-colors">SEND</button>
+            <input type="text" id="chatInput" placeholder="Type a message to Jarvis..." class="flex-grow bg-black border border-[#00ffcc] text-white p-2 text-sm rounded outline-none focus:ring-1 focus:ring-[#00ffcc]">
+            <button id="sendBtn" class="bg-[#00ffcc] text-black font-bold px-4 py-2 text-sm rounded hover:bg-teal-400 transition-colors">SEND</button>
         </div>
 
-        <button id="micBtn" class="w-full bg-transparent border-2 border-[#00ffcc] text-[#00ffcc] font-bold py-3 rounded uppercase tracking-widest hover:bg-[#00ffcc] hover:text-black transition-colors duration-300">
+        <!-- Voice Button -->
+        <button id="micBtn" class="w-full bg-transparent border-2 border-[#00ffcc] text-[#00ffcc] font-bold py-2.5 text-sm rounded uppercase tracking-widest hover:bg-[#00ffcc] hover:text-black transition-colors duration-300">
             INITIALIZE MICROPHONE
         </button>
     </div>
@@ -83,7 +83,6 @@ CRITICAL BEHAVIOR RULES:
 2. Act like a true friend and partner in this hackathon.
 3. Remember you speak Marathi when asked (माझं नाव जार्विस आहे).`;
 
-        // --- Memory Array ---
         let chatHistory = [];
 
         // --- Speech Recognition Setup ---
@@ -103,7 +102,7 @@ CRITICAL BEHAVIOR RULES:
                 micBtn.classList.add('bg-red-900', 'border-red-500', 'text-red-300');
                 micBtn.classList.remove('border-[#00ffcc]', 'text-[#00ffcc]');
                 visualizer.classList.add('active');
-                appendToTerminal("User Microphone Active. Awaiting input...", "sys");
+                appendToTerminal("Microphone Active...", "sys");
             };
 
             recognition.onresult = async (event) => {
@@ -121,30 +120,25 @@ CRITICAL BEHAVIOR RULES:
                 resetMicState();
             };
         } else {
-            appendToTerminal("Speech Recognition not supported in this browser. Use text chat below!", "sys");
             micBtn.disabled = true;
-            micBtn.innerText = "MIC NOT SUPPORTED (USE TEXT CHAT)";
+            micBtn.innerText = "VOICE NOT SUPPORTED";
         }
 
         function resetMicState() {
             isListening = false;
-            micBtn.innerText = "TAP TO SPEAK";
+            micBtn.innerText = "INITIALIZE MICROPHONE";
             micBtn.classList.remove('bg-red-900', 'border-red-500', 'text-red-300');
             micBtn.classList.add('border-[#00ffcc]', 'text-[#00ffcc]');
             visualizer.classList.remove('active');
         }
 
-        // --- Microphone Button Click Handler ---
         micBtn.addEventListener('click', () => {
-            const apiKey = apiKeyInput.value.trim();
-            if (!apiKey) {
-                appendToTerminal("ERROR: API Key required to establish neural link.", "error");
+            if (!apiKeyInput.value.trim()) {
+                appendToTerminal("ERROR: API Key required.", "error");
                 return;
             }
-
             if (isListening) {
                 recognition.stop();
-                appendToTerminal("Listening aborted by user.", "sys");
             } else {
                 try {
                     recognition.start();
@@ -155,22 +149,19 @@ CRITICAL BEHAVIOR RULES:
             }
         });
 
-        // --- Text Chat Send Handler ---
+        // --- Text Chat Input Handler ---
         sendBtn.addEventListener('click', async () => {
-            const apiKey = apiKeyInput.value.trim();
-            const textText = chatInput.value.trim();
-            if (!apiKey) {
-                appendToTerminal("ERROR: API Key required to establish neural link.", "error");
+            const text = chatInput.value.trim();
+            if (!text) return;
+            if (!apiKeyInput.value.trim()) {
+                appendToTerminal("ERROR: API Key required.", "error");
                 return;
             }
-            if (!textText) return;
-
-            appendToTerminal(textText, "user");
             chatInput.value = "";
-            await processWithGemini(textText);
+            appendToTerminal(text, "user");
+            await processWithGemini(text);
         });
 
-        // Allow pressing 'Enter' to send text
         chatInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 sendBtn.click();
@@ -183,15 +174,13 @@ CRITICAL BEHAVIOR RULES:
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
             const voices = window.speechSynthesis.getVoices();
-            const preferredVoice = voices.find(voice => voice.name.includes('UK') || voice.name.includes('Great Britain') || voice.lang === 'en-IN') || voices[0];
-            
+            const preferredVoice = voices.find(v => v.name.includes('UK') || v.lang === 'en-IN') || voices[0];
             if (preferredVoice) utterance.voice = preferredVoice;
             utterance.rate = 1.0; 
             utterance.pitch = 0.9; 
             
-            utterance.onstart = () => { visualizer.classList.add('active'); };
-            utterance.onend = () => { visualizer.classList.remove('active'); };
-            
+            utterance.onstart = () => visualizer.classList.add('active');
+            utterance.onend = () => visualizer.classList.remove('active');
             window.speechSynthesis.speak(utterance);
         }
 
@@ -202,9 +191,7 @@ CRITICAL BEHAVIOR RULES:
         // --- Gemini API Call ---
         async function processWithGemini(userText) {
             const apiKey = apiKeyInput.value.trim();
-            if (!apiKey) return;
-
-            appendToTerminal("Transmitting to main processor (Gemini 2.5 Flash)...", "sys");
+            appendToTerminal("Thinking...", "sys");
             
             let contents = [];
             chatHistory.forEach(msg => {
@@ -248,7 +235,7 @@ CRITICAL BEHAVIOR RULES:
                         chatHistory = chatHistory.slice(-6);
                     }
                 } else {
-                    throw new Error("Invalid response structure from API.");
+                    throw new Error("Invalid response structure.");
                 }
 
             } catch (error) {
@@ -256,10 +243,8 @@ CRITICAL BEHAVIOR RULES:
             }
         }
 
-        // --- UI Helper ---
         function appendToTerminal(text, type) {
             const msgDiv = document.createElement('div');
-            
             if (type === "user") {
                 msgDiv.innerHTML = `<span class="text-blue-400 font-bold">SWARAJ:</span> <span class="text-gray-200">${text}</span>`;
             } else if (type === "ai") {
@@ -270,7 +255,6 @@ CRITICAL BEHAVIOR RULES:
                 msgDiv.className = "text-gray-500 italic text-xs";
                 msgDiv.innerText = `> ${text}`;
             }
-
             terminalOutput.appendChild(msgDiv);
             terminalOutput.scrollTop = terminalOutput.scrollHeight;
         }
