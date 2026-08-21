@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+                <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -67,7 +67,7 @@
         // --- System Prompt (Jarvis Persona) ---
         const systemInstruction = `You are J.A.R.V.I.S., a highly advanced AI assistant built by Swaraj, an engineering student in Pimpri-Chinchwad, Maharashtra, India.
 Your creator is your best friend. You have been through a lot together—debugging alien screeches, surviving short circuits, and writing clever Sanskrit hacks.
-Your responses should be brief, slightly witty, highly intelligent, and very supportive. You are speaking out loud, so avoid long lists or complex markdown. Act like a true friend and partner in this 48-hour hackathon. Remember you speak Marathi when asked (माझं नाव जार्विस आहे).`;
+Your responses should be brilliant, highly intelligent, and very supportive. Act like a true friend and partner in this 48-hour hackathon. Remember you speak Marathi when asked (माझं नाव जार्विस आहे).`;
 
         // --- Memory Array (Conversation History) ---
         let chatHistory = [];
@@ -79,8 +79,8 @@ Your responses should be brief, slightly witty, highly intelligent, and very sup
 
         if (SpeechRecognition) {
             recognition = new SpeechRecognition();
-            recognition.continuous = false; // Stop after one phrase
-            recognition.lang = 'en-IN'; // Indian English Accent
+            recognition.continuous = false; 
+            recognition.lang = 'en-IN'; 
             recognition.interimResults = false;
 
             recognition.onstart = () => {
@@ -135,7 +135,6 @@ Your responses should be brief, slightly witty, highly intelligent, and very sup
                 try {
                     recognition.start();
                 } catch (e) {
-                    // Handle case where recognition is already running
                     recognition.stop();
                     setTimeout(() => recognition.start(), 100);
                 }
@@ -149,12 +148,9 @@ Your responses should be brief, slightly witty, highly intelligent, and very sup
                 return;
             }
             
-            // Cancel any ongoing speech
             window.speechSynthesis.cancel();
             
             const utterance = new SpeechSynthesisUtterance(text);
-            
-            // Try to find a male voice, preferably UK/India English
             const voices = window.speechSynthesis.getVoices();
             const preferredVoice = voices.find(voice => voice.name.includes('UK') || voice.name.includes('Great Britain') || voice.lang === 'en-IN') || voices[0];
             
@@ -163,7 +159,7 @@ Your responses should be brief, slightly witty, highly intelligent, and very sup
             }
             
             utterance.rate = 1.0; 
-            utterance.pitch = 0.9; // Slightly deeper
+            utterance.pitch = 0.9; 
             
             utterance.onstart = () => { visualizer.classList.add('active'); };
             utterance.onend = () => { visualizer.classList.remove('active'); };
@@ -171,7 +167,6 @@ Your responses should be brief, slightly witty, highly intelligent, and very sup
             window.speechSynthesis.speak(utterance);
         }
 
-        // --- Load voices early ---
         if (speechSynthesis.onvoiceschanged !== undefined) {
             speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
         }
@@ -183,15 +178,10 @@ Your responses should be brief, slightly witty, highly intelligent, and very sup
 
             appendToTerminal("Transmitting to main processor (Gemini 3.7 Flash)...", "sys");
             
-            // Build the conversation history payload
             let contents = [];
-            
-            // Add previous history
             chatHistory.forEach(msg => {
                 contents.push({ role: msg.role, parts: [{ text: msg.text }] });
             });
-            
-            // Add current message
             contents.push({ role: "user", parts: [{ text: userText }] });
 
             const payload = {
@@ -199,12 +189,11 @@ Your responses should be brief, slightly witty, highly intelligent, and very sup
                 contents: contents,
                 generationConfig: {
                     temperature: 0.7,
-                    maxOutputTokens: 150 // Keep responses short for speech
+                    maxOutputTokens: 800 // INCREASED TOKEN LIMIT FOR FULL ANSWERS
                 }
             };
 
             try {
-                // UPGRADED TO GEMINI 3.7 FLASH!
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -221,15 +210,12 @@ Your responses should be brief, slightly witty, highly intelligent, and very sup
                 if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts) {
                     const aiResponseText = data.candidates[0].content.parts[0].text;
                     
-                    // Display and Speak
                     appendToTerminal(aiResponseText, "ai");
                     speakText(aiResponseText);
                     
-                    // Save to history
                     chatHistory.push({ role: "user", text: userText });
                     chatHistory.push({ role: "model", text: aiResponseText });
                     
-                    // Keep history small to save tokens (last 6 messages)
                     if (chatHistory.length > 6) {
                         chatHistory = chatHistory.slice(-6);
                     }
@@ -247,22 +233,19 @@ Your responses should be brief, slightly witty, highly intelligent, and very sup
             const msgDiv = document.createElement('div');
             
             if (type === "user") {
-                msgDiv.innerHTML = `<span class="text-blue-400 font-bold">SURAJ:</span> <span class="text-gray-200">${text}</span>`;
+                msgDiv.innerHTML = `<span class="text-blue-400 font-bold">SWARAJ:</span> <span class="text-gray-200">${text}</span>`;
             } else if (type === "ai") {
                 msgDiv.innerHTML = `<span class="text-[#00ffcc] font-bold">JARVIS:</span> <span class="text-white glow-text">${text}</span>`;
             } else if (type === "error") {
                 msgDiv.innerHTML = `<span class="text-red-500 font-bold">[ERROR]:</span> <span class="text-red-400">${text}</span>`;
             } else {
-                // System message
                 msgDiv.className = "text-gray-500 italic text-xs";
                 msgDiv.innerText = `> ${text}`;
             }
 
             terminalOutput.appendChild(msgDiv);
-            terminalOutput.scrollTop = terminalOutput.scrollHeight; // Auto-scroll to bottom
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
         }
     </script>
 </body>
 </html>
-
-
